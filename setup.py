@@ -7,5 +7,6 @@ setup(
     version='0.1',
     author_email='alfred82santa@gmail.com',
     packages=['dirty_models_sphinx'],
+    install_requires=['dirty-models', 'sphinx'],
     zip_safe=True,
 )
