@@ -107,5 +107,5 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
         super(DirtyModelAttributeDocumenter, self).generate(more_content, real_modname,
                                                             check_module, all_members)
 
-        for alias in self.object.alias:
-            self.add_line(":alias {0}:".format(alias), '<autodoc>')
+        for alias in (self.object.alias or []):
+            self.add_line(":alias field: {0}".format(alias), '<autodoc>')
