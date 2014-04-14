@@ -1,0 +1,3 @@
+git+https://github.com/alfred82santa/dirty-models.git
+git+https://github.com/alfred82santa/dirty-validators.git
+sphinx
