@@ -32,28 +32,13 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         'noindex': directives.flag,
         'module': directives.unchanged,
         'annotation': directives.unchanged,
-        'readonly': directives.flag,
-        'type': directives.unchanged,
     }
 
     doc_field_types = [
         GroupedField('aliases', label=l_('Aliases'), rolename='obj',
                      names=('alias',),
                      can_collapse=True),
-        Field('type', label=l_('Type'),  has_arg=False,
-              names=('fieldtype',)),
     ]
-
-    def handle_signature(self, sig, signode):
-        result = super(DirtyModelAttributeDirective, self).handle_signature(sig, signode)
-        fieldtype = self.options.get('type', None)
-        if fieldtype:
-            fieldtypestr = ': {0}'.format(fieldtype)
-            signode += addnodes.desc_type(fieldtypestr, fieldtypestr)
-        readonly = 'readonly' in self.options
-        if readonly:
-            signode += addnodes.desc_addname(' [READ ONLY]', ' [READ ONLY]')
-        return result
 
 
 def setup(app):
