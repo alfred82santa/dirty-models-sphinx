@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='dirty-models',
+    name='dirty-models-sphinx',
     url='https://github.com/alfred82santa/dirty-models-sphinx',
     author='alfred82santa',
     version='0.1',
