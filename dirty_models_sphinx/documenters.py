@@ -66,41 +66,6 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
         sphinx.ext.autodoc.ClassLevelDocumenter.add_content(
             self, more_content, no_docstring)
 
-    def add_directive_header(self, sig):
-        result = super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
-        if self.object.read_only:
-            self.add_line(u'   :readonly:', '<autodoc>')
-        fieldtype = self._get_field_type_str()
-        if fieldtype:
-            self.add_line("   :type: {0}".format(fieldtype), '<autodoc>')
-        return result
-
-    def _get_field_type_str(self, field_desc=None):
-        if field_desc is None:
-            field_desc = self.object
-
-        if isinstance(field_desc, IntegerField):
-            return 'Integer'
-        elif isinstance(field_desc, FloatField):
-            return 'Float'
-        elif isinstance(field_desc, BooleanField):
-            return 'Boolean'
-        elif isinstance(field_desc, StringField):
-            return 'String'
-        elif isinstance(field_desc, StringIdField):
-            return 'String (not empty)'
-        elif isinstance(field_desc, TimeField):
-            return 'Time (format: {0})'.format(field_desc.parse_format or 'magic')
-        elif isinstance(field_desc, DateField):
-            return 'Date'
-        elif isinstance(field_desc, DateTimeField):
-            return 'DateTime'
-        elif isinstance(field_desc, ModelField):
-            return '{0}.{1}'.format(field_desc.model_class.__module__,
-                                    field_desc.model_class.__name__)
-        elif isinstance(field_desc, ArrayField):
-            return 'List of {0}'.format(self._get_field_type_str(field_desc.field_type))
-
     def generate(self, more_content=None, real_modname=None,
                  check_module=False, all_members=False):
 
