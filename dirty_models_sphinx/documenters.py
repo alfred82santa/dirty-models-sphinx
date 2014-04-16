@@ -14,7 +14,7 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
 
     """A Documenter for :class:`dirty_models.models.BaseModel`.
     """
-    objtype = 'dirtymodel'               # Called 'autodirtymodel'
+    objtype = 'dirtymodel'  # Called 'autodirtymodel'
 
     # Since these have very specific tests, we give the classes defined here
     # very high priority so that they override any other documenters.
@@ -53,50 +53,56 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     """A Documenter for :class:`dirty_models.fields.BaseField`
     interface attributes.
     """
-    objtype = 'dirtymodelattribute'   # Called 'autodirtymoldelattribute'
+    objtype = 'dirtymodelattribute'  # Called 'autodirtymoldelattribute'
+#     directivetype = 'attribute'
+
     priority = 100 + sphinx.ext.autodoc.AttributeDocumenter.priority
 
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
         return isinstance(member, BaseField)
 
-    def add_content(self, more_content, no_docstring=False):
-        # Revert back to default since the docstring *is* the correct thing to
-        # display here.
-        sphinx.ext.autodoc.ClassLevelDocumenter.add_content(
-            self, more_content, no_docstring)
+#     def add_content(self, more_content, no_docstring=False):
+#         # Revert back to default since the docstring *is* the correct thing to
+#         # display here.
+#
+#         return sphinx.ext.autodoc.ClassLevelDocumenter.add_content(
+#             self, more_content, no_docstring)
 
     def add_directive_header(self, sig):
-        result = super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
+        super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
         if self.object.read_only:
             self.add_line(u'   :readonly:', '<autodoc>')
         fieldtype = self._get_field_type_str()
         if fieldtype:
-            self.add_line("   :type: {0}".format(fieldtype), '<autodoc>')
-        return result
+            self.add_line('', '<autodoc>')
+            self.add_line("   **Type:** {0}".format(fieldtype), '<autodoc>')
 
     def _get_field_type_str(self, field_desc=None):
         if field_desc is None:
             field_desc = self.object
 
         if isinstance(field_desc, IntegerField):
-            return 'Integer'
+            return ':class:`int`'
         elif isinstance(field_desc, FloatField):
-            return 'Float'
+            return ':class:`float`'
         elif isinstance(field_desc, BooleanField):
-            return 'Boolean'
+            return ':class:`bool`'
         elif isinstance(field_desc, StringField):
-            return 'String'
+            return ':class:`str`'
         elif isinstance(field_desc, StringIdField):
-            return 'String (not empty)'
+            return ':class:`str` (not empty)'
         elif isinstance(field_desc, TimeField):
-            return 'Time (format: {0})'.format(field_desc.parse_format or 'magic')
+            return ':class:`datetime.time`{0}'.format('format: {0})'.format(field_desc.parse_format)
+                                                      if field_desc.parse_format else '')
         elif isinstance(field_desc, DateField):
-            return 'Date'
+            return ':class:`datetime.date`{0}'.format('format: {0})'.format(field_desc.parse_format)
+                                                      if field_desc.parse_format else '')
         elif isinstance(field_desc, DateTimeField):
-            return 'DateTime'
+            return ':class:`datetime.datetime`{0}'.format('format: {0})'.format(field_desc.parse_format)
+                                                          if field_desc.parse_format else '')
         elif isinstance(field_desc, ModelField):
-            return '{0}.{1}'.format(field_desc.model_class.__module__,
+            return ':class:`{0}.{1}`'.format(field_desc.model_class.__module__,
                                     field_desc.model_class.__name__)
         elif isinstance(field_desc, ArrayField):
             return 'List of {0}'.format(self._get_field_type_str(field_desc.field_type))
@@ -108,4 +114,4 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
                                                             check_module, all_members)
 
         for alias in (self.object.alias or []):
-            self.add_line(":alias field: {0}".format(alias), '<autodoc>')
+            self.add_line(":alias {0}:".format(alias), '<autodoc>')

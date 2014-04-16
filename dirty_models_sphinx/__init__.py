@@ -4,8 +4,10 @@ import sphinx.roles
 from sphinx.locale import l_
 from sphinx import addnodes
 from docutils.parsers.rst import directives
-from sphinx.util.docfields import Field, GroupedField, TypedField
+from sphinx.util.docfields import Field, GroupedField
 from .documenters import DirtyModelDocumenter, DirtyModelAttributeDocumenter
+from docutils import nodes
+from docutils.nodes import Node
 
 
 class DirtyModelDirective(sphinx.domains.python.PyClasslike):
@@ -24,6 +26,21 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
         return 'Model '
 
 
+class AliasGroupedField(GroupedField):
+
+    def make_field(self, types, domain, items):
+        fieldname = nodes.field_name('', self.label)
+        listnode = self.list_type()
+        if len(items) == 1 and self.can_collapse:
+            return Field.make_field(self, types, domain, items[0])
+        for fieldarg, content in items:
+            par = nodes.paragraph()
+            par += self.make_xref(self.rolename, domain, fieldarg, nodes.strong)
+            listnode += nodes.list_item('', par)
+        fieldbody = nodes.field_body('', listnode)
+        return nodes.field('', fieldname, fieldbody)
+
+
 class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
 
     r"""An `'dirtymodelattribute'` directive."""
@@ -33,26 +50,29 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         'module': directives.unchanged,
         'annotation': directives.unchanged,
         'readonly': directives.flag,
-        'type': directives.unchanged,
+#         'type': directives.unchanged,
     }
 
     doc_field_types = [
-        GroupedField('aliases', label=l_('Aliases'), rolename='obj',
+        AliasGroupedField('aliases', label=l_('Aliases'), rolename=None,
                      names=('alias',),
-                     can_collapse=True),
-        Field('type', label=l_('Type'),  has_arg=False,
-              names=('fieldtype',)),
+                     can_collapse=False)
     ]
 
     def handle_signature(self, sig, signode):
         result = super(DirtyModelAttributeDirective, self).handle_signature(sig, signode)
-        fieldtype = self.options.get('type', None)
-        if fieldtype:
-            fieldtypestr = ': {0}'.format(fieldtype)
-            signode += addnodes.desc_type(fieldtypestr, fieldtypestr)
+#         fieldtype = self.options.get('type', None)
+#         if fieldtype:
+# #             fieldtypestr = ': {0}'.format(fieldtype)
+#             node = addnodes.pending_xref(fieldtype, reftype='class', refdomain='py', reftarget=fieldtype)
+#             node['py:class'] = fieldtype
+#             node += nodes.emphasis(fieldtype, fieldtype)
+#             signode += node
+#             print (node)
         readonly = 'readonly' in self.options
         if readonly:
-            signode += addnodes.desc_addname(' [READ ONLY]', ' [READ ONLY]')
+            signode += nodes.emphasis(' [READ ONLY]', ' [READ ONLY]')
+#         print (result)
         return result
 
 
