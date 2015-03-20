@@ -93,13 +93,13 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
         elif isinstance(field_desc, StringIdField):
             return ':class:`str` (not empty)'
         elif isinstance(field_desc, TimeField):
-            return ':class:`datetime.time`{0}'.format('format: {0})'.format(field_desc.parse_format)
+            return ':class:`datetime.time` {0}'.format('format: {0})'.format(field_desc.parse_format)
                                                       if field_desc.parse_format else '')
         elif isinstance(field_desc, DateField):
-            return ':class:`datetime.date`{0}'.format('format: {0})'.format(field_desc.parse_format)
+            return ':class:`datetime.date` {0}'.format('format: {0})'.format(field_desc.parse_format)
                                                       if field_desc.parse_format else '')
         elif isinstance(field_desc, DateTimeField):
-            return ':class:`datetime.datetime`{0}'.format('format: {0})'.format(field_desc.parse_format)
+            return ':class:`datetime.datetime` {0}'.format('format: {0})'.format(field_desc.parse_format)
                                                           if field_desc.parse_format else '')
         elif isinstance(field_desc, ModelField):
             return ':class:`{0}.{1}`'.format(field_desc.model_class.__module__,
