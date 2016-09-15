@@ -2,8 +2,8 @@
 |project-status| |project-license| |project-format|
 |project-implementation|
 
-.. |doc-master| image:: https://readthedocs.org/projects/dirty-models-sphinx/badge/?version=latest
-    :target: http://dirty-models-sphinx.readthedocs.io/?badge=latest
+.. |doc-master| image:: https://readthedocs.org/projects/dirty-models-sphin-extensionx/badge/?version=latest
+    :target: http://dirty-models-sphinx-extension.readthedocs.io/?badge=latest
     :alt: Documentation Status
 
 .. |pypi-lastrelease| image:: https://img.shields.io/pypi/v/dirty-models-sphinx.svg
