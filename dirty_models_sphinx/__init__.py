@@ -2,17 +2,36 @@ import sphinx.ext.autodoc
 import sphinx.domains.python
 import sphinx.roles
 from sphinx.locale import l_
-from sphinx import addnodes
 from docutils.parsers.rst import directives
 from sphinx.util.docfields import Field, GroupedField
+
 from .documenters import DirtyModelDocumenter, DirtyModelAttributeDocumenter
 from docutils import nodes
-from docutils.nodes import Node
+
+
+class ModelHeading(object):
+    """
+    A heading level that is not defined by a string. We need this to work with
+    the mechanics of
+    :py:meth:`docutils.parsers.rst.states.RSTState.check_subsection`.
+
+    The important thing is that the length can vary, but it must be equal to
+    any other instance of FauxHeading.
+    """
+
+    def __init__(self):
+        pass
+
+    def __len__(self):
+        return 0
+
+    def __eq__(self, other):
+        return isinstance(other, ModelHeading)
 
 
 class DirtyModelDirective(sphinx.domains.python.PyClasslike):
 
-    r"""An `'dirtymodel'` directive."""
+    """An `'dirtymodel'` directive."""
 
     def get_index_text(self, modname, name_cls):
         if self.objtype == 'dirtymodel':
@@ -43,17 +62,22 @@ class AliasGroupedField(GroupedField):
 
 class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
 
-    r"""An `'dirtymodelattribute'` directive."""
+    """An `'dirtymodelattribute'` directive."""
 
     option_spec = {
         'noindex': directives.flag,
         'module': directives.unchanged,
         'annotation': directives.unchanged,
         'readonly': directives.flag,
-#         'type': directives.unchanged,
     }
 
     doc_field_types = [
+        Field('fieldtype', label=l_('Type'), has_arg=False,
+              names=('fieldtype', )),
+        Field('fieldformat', label=l_('Format'), has_arg=False,
+              names=('fieldformat',)),
+        Field('defaultvalue', label=l_('Default'), has_arg=False,
+              names=('default',)),
         AliasGroupedField('aliases', label=l_('Aliases'), rolename=None,
                      names=('alias',),
                      can_collapse=False)
@@ -61,18 +85,12 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
 
     def handle_signature(self, sig, signode):
         result = super(DirtyModelAttributeDirective, self).handle_signature(sig, signode)
-#         fieldtype = self.options.get('type', None)
-#         if fieldtype:
-# #             fieldtypestr = ': {0}'.format(fieldtype)
-#             node = addnodes.pending_xref(fieldtype, reftype='class', refdomain='py', reftarget=fieldtype)
-#             node['py:class'] = fieldtype
-#             node += nodes.emphasis(fieldtype, fieldtype)
-#             signode += node
-#             print (node)
+
         readonly = 'readonly' in self.options
         if readonly:
-            signode += nodes.emphasis(' [READ ONLY]', ' [READ ONLY]')
-#         print (result)
+            t = ' [{}]'.format(l_('READ ONLY'))
+            signode += nodes.emphasis(t, t)
+
         return result
 
 
