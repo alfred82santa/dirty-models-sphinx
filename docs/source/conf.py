@@ -192,10 +192,10 @@ html_static_path = ['_static']
 # Custom sidebar templates, maps document names to template names.
 #
 html_sidebars = {'**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
+    'about.html',
+    'navigation.html',
+    'relations.html',
+    'searchbox.html',
 ]}
 
 # Additional templates that should be rendered to pages, maps page names to
@@ -260,21 +260,21 @@ htmlhelp_basename = 'DirtyModelSphinxextensiondoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-     # The paper size ('letterpaper' or 'a4paper').
-     #
-     # 'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
 
-     # The font size ('10pt', '11pt' or '12pt').
-     #
-     # 'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
 
-     # Additional stuff for the LaTeX preamble.
-     #
-     # 'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
 
-     # Latex figure (float) alignment
-     #
-     # 'figure_align': 'htbp',
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -447,4 +447,4 @@ epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/3.4': None,
-                       'http://dirty-models.readthedocs.io': None,}
+                       'http://dirty-models.readthedocs.io': None, }

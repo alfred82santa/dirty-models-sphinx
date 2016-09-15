@@ -45,9 +45,7 @@ class ComposedModel(SimpleModel):
                                                   StringField()])
 
 
-
 def hour_to_time(hour):
-
     """
     Create time with hour.
 
@@ -57,6 +55,7 @@ def hour_to_time(hour):
     """
 
     return time(hour=hour, minute=0, second=0)
+
 
 class AliasModel(BaseModel):
 

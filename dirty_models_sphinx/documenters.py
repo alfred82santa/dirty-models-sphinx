@@ -63,7 +63,6 @@ def field_format(parse_format):
                                                         parse_format.__name__)
 
 
-
 class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
 
     """A Documenter for :class:`dirty_models.fields.BaseField`
@@ -77,7 +76,6 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
         return isinstance(member, BaseField)
-
 
     def add_directive_header(self, sig):
         super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
@@ -98,7 +96,6 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
                 self.add_line("   :fieldformat: {0}".format(frt), '<autodoc>')
         except AttributeError:
             pass
-
 
     def _get_field_type_str(self, field_desc=None):
 
@@ -127,12 +124,12 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
 
         elif isinstance(field_desc, HashMapField):
             return ':py:class:`~{0}.{1}` hash map which values are {2}'.format(field_desc.model_class.__module__,
-                                                                           field_desc.model_class.__name__,
-                                                                           self._get_field_type_str(
-                                                                               field_desc.field_type))
+                                                                               field_desc.model_class.__name__,
+                                                                               self._get_field_type_str(
+                                                                                   field_desc.field_type))
         elif isinstance(field_desc, ModelField):
             return ':py:class:`~{0}.{1}`'.format(field_desc.model_class.__module__,
-                                    field_desc.model_class.__name__)
+                                                 field_desc.model_class.__name__)
 
         elif isinstance(field_desc, ArrayField):
             return 'List of {0}'.format(self._get_field_type_str(field_desc.field_type))

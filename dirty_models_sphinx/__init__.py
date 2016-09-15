@@ -79,8 +79,8 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         Field('defaultvalue', label=l_('Default'), has_arg=False,
               names=('default',)),
         AliasGroupedField('aliases', label=l_('Aliases'), rolename=None,
-                     names=('alias',),
-                     can_collapse=False)
+                          names=('alias',),
+                          can_collapse=False)
     ]
 
     def handle_signature(self, sig, signode):
