@@ -1,2 +1,2 @@
 dirty-models >= 0.7.2
-sphinx
+sphinx >= 1.4
