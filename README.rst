@@ -2,7 +2,7 @@
 |project-status| |project-license| |project-format|
 |project-implementation|
 
-.. |doc-master| image:: https://readthedocs.org/projects/dirty-models-sphin-extensionx/badge/?version=latest
+.. |doc-master| image:: https://readthedocs.org/projects/dirty-models-sphinx-extension/badge/?version=latest
     :target: http://dirty-models-sphinx-extension.readthedocs.io/?badge=latest
     :alt: Documentation Status
 
