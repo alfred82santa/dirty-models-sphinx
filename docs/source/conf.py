@@ -141,7 +141,7 @@ html_theme = 'alabaster'
 html_theme_options = {
     'description': "Sphinx extension for autodocument Dirty Models",
     'github_repo': 'dirty-models-sphinx',
-    'github_user': 'alfre82santa',
+    'github_user': 'alfred82santa',
     'fixed_sidebar': True,
     'github_button': True,
     'github_banner': True
