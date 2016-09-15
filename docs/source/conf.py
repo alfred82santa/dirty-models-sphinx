@@ -143,6 +143,8 @@ html_theme_options = {
     'github_repo': 'dirty-models-sphinx',
     'github_user': 'alfre82santa',
     'fixed_sidebar': True,
+    'github_button': True,
+    'github_banner': True
 }
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
