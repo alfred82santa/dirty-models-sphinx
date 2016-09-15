@@ -7,7 +7,8 @@ import sphinx.roles
 from dirty_models.models import BaseModel
 from dirty_models.fields import (BaseField, IntegerField, FloatField, StringField,
                                  StringIdField, BooleanField, TimeField, DateField,
-                                 DateTimeField, ModelField, ArrayField)
+                                 DateTimeField, ModelField, ArrayField, TimedeltaField, HashMapField, BlobField,
+                                 MultiTypeField)
 
 
 class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
@@ -25,27 +26,42 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
         return isinstance(member, type) and issubclass(member, BaseModel)
 
     def get_object_members(self, want_all):
-        """
-        Return `(members_check_module, members)` where `members` is a
-        list of `(membername, member)` pairs of the members of *self.object*.
-
-        If *want_all* is True, return all members.  Else, only return those
-        members given by *self.options.members* (which may also be none).
-        """
         members_check_module, members = super(DirtyModelDocumenter, self).get_object_members(want_all)
 
         new_members = []
 
         for name, member in members:
-            if isinstance(member, BaseField) and (name != member.name):
-                if member.alias is None:
-                    member.alias = []
-                if name not in member.alias:
-                    member.alias.append(name)
-            else:
+            if not isinstance(member, BaseField):
                 new_members.append((name, member))
 
+        for field_name, member in self.object.get_structure().items():
+            try:
+                member.default = self.object.get_default_data()[field_name]
+            except KeyError:
+                pass
+            new_members.append((field_name, member))
+
         return members_check_module, new_members
+
+
+def field_format(parse_format):
+    if isinstance(parse_format, str):
+        return '``{}``'.format(parse_format)
+    elif isinstance(parse_format, dict):
+        try:
+            return field_format(parse_format['formatter'])
+        except KeyError:
+            pass
+        try:
+            return field_format(parse_format['parser'])
+        except KeyError:
+            pass
+
+        return field_format(None)
+    elif callable(parse_format):
+        return 'formatted by :py:func:`{0}.{1}`'.format(parse_format.__module__,
+                                                        parse_format.__name__)
+
 
 
 class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
@@ -62,50 +78,69 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     def can_document_member(cls, member, membername, isattr, parent):
         return isinstance(member, BaseField)
 
-#     def add_content(self, more_content, no_docstring=False):
-#         # Revert back to default since the docstring *is* the correct thing to
-#         # display here.
-#
-#         return sphinx.ext.autodoc.ClassLevelDocumenter.add_content(
-#             self, more_content, no_docstring)
 
     def add_directive_header(self, sig):
         super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
+
         if self.object.read_only:
-            self.add_line(u'   :readonly:', '<autodoc>')
+            self.add_line('   :readonly:', '<autodoc>')
         fieldtype = self._get_field_type_str()
         if fieldtype:
-            self.add_line('', '<autodoc>')
-            self.add_line("   **Type:** {0}".format(fieldtype), '<autodoc>')
+            self.add_line('   ', '<autodoc>')
+            self.add_line("   :fieldtype: {0}".format(fieldtype), '<autodoc>')
+        if self.object.default is not None:
+            self.add_line('   ', '<autodoc>')
+            self.add_line("   :default: {0}".format(self.object.default), '<autodoc>')
+
+        try:
+            frt = field_format(self.object.parse_format)
+            if frt:
+                self.add_line("   :fieldformat: {0}".format(frt), '<autodoc>')
+        except AttributeError:
+            pass
+
 
     def _get_field_type_str(self, field_desc=None):
+
         if field_desc is None:
             field_desc = self.object
 
         if isinstance(field_desc, IntegerField):
-            return ':class:`int`'
+            return ':py:class:`int`'
         elif isinstance(field_desc, FloatField):
-            return ':class:`float`'
+            return ':py:class:`float`'
         elif isinstance(field_desc, BooleanField):
-            return ':class:`bool`'
+            return ':py:class:`bool`'
         elif isinstance(field_desc, StringField):
-            return ':class:`str`'
+            return ':py:class:`str`'
         elif isinstance(field_desc, StringIdField):
-            return ':class:`str` (not empty)'
+            return ':py:class:`str` (not empty)'
+
         elif isinstance(field_desc, TimeField):
-            return ':class:`datetime.time` {0}'.format('format: ``{0}``'.format(field_desc.parse_format)
-                                                      if field_desc.parse_format else '')
+            return ':py:class:`~datetime.time`'
         elif isinstance(field_desc, DateField):
-            return ':class:`datetime.date` {0}'.format('format: ``{0}``'.format(field_desc.parse_format)
-                                                      if field_desc.parse_format else '')
+            return ':py:class:`~datetime.date`'
         elif isinstance(field_desc, DateTimeField):
-            return ':class:`datetime.datetime` {0}'.format('format: ``{0}``'.format(field_desc.parse_format)
-                                                          if field_desc.parse_format else '')
+            return ':py:class:`~datetime.datetime`'
+        elif isinstance(field_desc, TimedeltaField):
+            return ':py:class:`~datetime.timedelta`'
+
+        elif isinstance(field_desc, HashMapField):
+            return ':py:class:`~{0}.{1}` hash map which values are {2}'.format(field_desc.model_class.__module__,
+                                                                           field_desc.model_class.__name__,
+                                                                           self._get_field_type_str(
+                                                                               field_desc.field_type))
         elif isinstance(field_desc, ModelField):
-            return ':class:`{0}.{1}`'.format(field_desc.model_class.__module__,
+            return ':py:class:`~{0}.{1}`'.format(field_desc.model_class.__module__,
                                     field_desc.model_class.__name__)
+
         elif isinstance(field_desc, ArrayField):
             return 'List of {0}'.format(self._get_field_type_str(field_desc.field_type))
+
+        elif isinstance(field_desc, MultiTypeField):
+            return ' or '.join([self._get_field_type_str(field_type) for field_type in field_desc.field_types])
+        elif isinstance(field_desc, BlobField):
+            return 'anything'
 
     def generate(self, more_content=None, real_modname=None,
                  check_module=False, all_members=False):
