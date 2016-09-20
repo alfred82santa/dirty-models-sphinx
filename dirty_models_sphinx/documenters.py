@@ -80,14 +80,19 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     def add_directive_header(self, sig):
         super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
 
+        fieldtype = self._get_field_type_str()
+
         if self.object.read_only:
             self.add_line('   :readonly:', '<autodoc>')
-        fieldtype = self._get_field_type_str()
-        if fieldtype:
+
+        if self.env.app.config.dirty_model_field_type_as_annotation:
+            self.add_line("   :annotation: {0}".format(fieldtype), '<autodoc>')
+            self.add_line('   ', '<autodoc>')
+        else:
             self.add_line('   ', '<autodoc>')
             self.add_line("   :fieldtype: {0}".format(fieldtype), '<autodoc>')
+
         if self.object.default is not None:
-            self.add_line('   ', '<autodoc>')
             self.add_line("   :default: {0}".format(self.object.default), '<autodoc>')
 
         try:

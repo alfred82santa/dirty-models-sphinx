@@ -7,7 +7,7 @@ setup(
     url='https://github.com/alfred82santa/dirty-models-sphinx',
     author='alfred82santa',
     author_email='alfred82santa@gmail.com',
-    version='0.2.0',
+    version='0.3.0',
     classifiers=[
         'Intended Audience :: Developers',
         'Programming Language :: Python',

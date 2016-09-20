@@ -23,7 +23,7 @@ class SimpleModel(BaseModel):
     string_field = StringField(default="default value")
     string_id_field = StringIdField()
     time_field = TimeField(parse_format="%H:%M:%S")
-    date_field = DateField(parse_format={'parser': '"%d/%m/%y"'})
+    date_field = DateField(parse_format={'parser': '%d/%m/%y'})
     datetime_field = DateTimeField(parse_format={'parser': '"%d/%m/%y %H:%M:%S"',
                                                  'formatter': '%d/%m/%y %H:%M:%S'})
     timedelta_field = TimedeltaField()
@@ -80,3 +80,16 @@ class AliasModel(BaseModel):
     string_field = StringField(alias=['text_field'])
     bool_field = BooleanField(name='boolean_field')
     time_field = TimeField(parse_format=hour_to_time)
+
+    def model_method(self):
+        """
+        Model method
+        """
+        pass
+
+    @classmethod
+    def model_class_method(cls):
+        """
+        Model method
+        """
+        pass
