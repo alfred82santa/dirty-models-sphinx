@@ -3,7 +3,7 @@ import ast
 import os
 from setuptools import setup
 
-path = os.path.join(os.path.dirname(__file__), 'dirty_models', '__init__.py')
+path = os.path.join(os.path.dirname(__file__), 'dirty_models_sphinx', '__init__.py')
 
 with open(path, 'r') as file:
     t = compile(file.read(), path, 'exec', ast.PyCF_ONLY_AST)
