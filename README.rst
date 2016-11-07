@@ -91,6 +91,7 @@ Version 0.4.0
 
 * Document default timezone on TimeField and DatetimeField.
 * Document forced timezone on DatetimeField.
+* Minor fixes.
 
 
 Version 0.3.0
