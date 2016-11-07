@@ -3,10 +3,10 @@ from datetime import time
 from dirty_models.fields import IntegerField, StringField, FloatField, StringIdField, BooleanField, TimeField, \
     DateField, DateTimeField, TimedeltaField, HashMapField, ModelField, ArrayField, MultiTypeField, BlobField
 from dirty_models.models import BaseModel
+from pytz import timezone
 
 
 class SimpleModel(BaseModel):
-
     """
     Model with simple type fields
     """
@@ -22,16 +22,17 @@ class SimpleModel(BaseModel):
     bool_field = BooleanField()
     string_field = StringField(default="default value")
     string_id_field = StringIdField()
-    time_field = TimeField(parse_format="%H:%M:%S")
+    time_field = TimeField(parse_format="%H:%M:%S", default_timezone=timezone('Europe/Paris'))
     date_field = DateField(parse_format={'parser': '%d/%m/%y'})
     datetime_field = DateTimeField(parse_format={'parser': '"%d/%m/%y %H:%M:%S"',
-                                                 'formatter': '%d/%m/%y %H:%M:%S'})
+                                                 'formatter': '%d/%m/%y %H:%M:%S'},
+                                   default_timezone=timezone('Europe/London'),
+                                   force_timezone=True)
     timedelta_field = TimedeltaField()
     blob_field = BlobField()
 
 
 class ComposedModel(SimpleModel):
-
     """
     Model with composed fields
     """
@@ -58,7 +59,6 @@ def hour_to_time(hour):
 
 
 class AliasModel(BaseModel):
-
     """
     Model alias fields
     """
