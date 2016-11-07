@@ -8,7 +8,7 @@ from dirty_models.models import BaseModel
 from dirty_models.fields import (BaseField, IntegerField, FloatField, StringField,
                                  StringIdField, BooleanField, TimeField, DateField,
                                  DateTimeField, ModelField, ArrayField, TimedeltaField, HashMapField, BlobField,
-                                 MultiTypeField)
+                                 MultiTypeField, EnumField)
 
 
 class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
@@ -60,7 +60,7 @@ def field_format(parse_format):
         return field_format(None)
     elif callable(parse_format):
         return 'formatted by :py:func:`{0}.{1}`'.format(parse_format.__module__,
-                                                        parse_format.__name__)
+                                                        parse_format.__qualname__)
 
 
 class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
@@ -96,6 +96,19 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             self.add_line("   :default: {0}".format(self.object.default), '<autodoc>')
 
         try:
+            if self.object.default_timezone is not None:
+                try:
+                    if self.object.force_timezone:
+                        self.add_line("   :forcedtimezone: {0}".format(self.object.default_timezone), '<autodoc>')
+                    else:
+                        raise AttributeError()
+                except AttributeError:
+                    self.add_line("   :defaulttimezone: {0}".format(self.object.default_timezone), '<autodoc>')
+
+        except AttributeError:
+            pass
+
+        try:
             frt = field_format(self.object.parse_format)
             if frt:
                 self.add_line("   :fieldformat: {0}".format(frt), '<autodoc>')
@@ -129,12 +142,16 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
 
         elif isinstance(field_desc, HashMapField):
             return ':py:class:`~{0}.{1}` hash map which values are {2}'.format(field_desc.model_class.__module__,
-                                                                               field_desc.model_class.__name__,
+                                                                               field_desc.model_class.__qualname__,
                                                                                self._get_field_type_str(
                                                                                    field_desc.field_type))
         elif isinstance(field_desc, ModelField):
             return ':py:class:`~{0}.{1}`'.format(field_desc.model_class.__module__,
-                                                 field_desc.model_class.__name__)
+                                                 field_desc.model_class.__qualname__)
+
+        elif isinstance(field_desc, EnumField):
+            return ':py:class:`~{0}.{1}`'.format(field_desc.enum_class.__module__,
+                                                 field_desc.enum_class.__qualname__)
 
         elif isinstance(field_desc, ArrayField):
             return 'List of {0}'.format(self._get_field_type_str(field_desc.field_type))

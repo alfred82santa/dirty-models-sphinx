@@ -1,14 +1,17 @@
-import sphinx.ext.autodoc
 import sphinx.domains.python
+import sphinx.ext.autodoc
 import sphinx.roles
+from docutils import nodes
+from docutils.parsers.rst import directives
 from docutils.statemachine import ViewList
 from sphinx import addnodes
 from sphinx.locale import l_
-from docutils.parsers.rst import directives
 from sphinx.util.docfields import Field, GroupedField
 
 from .documenters import DirtyModelDocumenter, DirtyModelAttributeDocumenter
-from docutils import nodes
+
+
+__version__ = '0.4.0'
 
 
 class ModelHeading(object):
@@ -32,7 +35,6 @@ class ModelHeading(object):
 
 
 class DirtyModelDirective(sphinx.domains.python.PyClasslike):
-
     """An `'dirtymodel'` directive."""
 
     def get_index_text(self, modname, name_cls):
@@ -71,7 +73,8 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
                     if not isinstance(node, addnodes.desc) or node['desctype'] not in ('attribute',
                                                                                        'dirtymodelattribute',
                                                                                        'method',
-                                                                                       'classmethod'):
+                                                                                       'classmethod',
+                                                                                       'class'):
                         continue
                     namenode = get_desc_name(node[0])
                     label = namenode.astext()
@@ -102,7 +105,6 @@ class AliasGroupedField(GroupedField):
 
 
 class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
-
     """An `'dirtymodelattribute'` directive."""
 
     option_spec = {
@@ -114,11 +116,15 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
 
     doc_field_types = [
         Field('fieldtype', label=l_('Type'), has_arg=False,
-              names=('fieldtype', )),
+              names=('fieldtype',)),
         Field('fieldformat', label=l_('Format'), has_arg=False,
               names=('fieldformat',)),
         Field('defaultvalue', label=l_('Default value'), has_arg=False,
               names=('default',)),
+        Field('defaulttimezone', label=l_('Default timezone'), has_arg=False,
+              names=('defaulttimezone',)),
+        Field('forcedtimezone', label=l_('Timezone'), has_arg=False,
+              names=('forcedtimezone',)),
         AliasGroupedField('aliases', label=l_('Aliases'), rolename=None,
                           names=('alias',),
                           can_collapse=False)
@@ -143,7 +149,11 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
 
         if self.options.get('annotation'):
             anno = addnodes.desc_annotation()
-            signode[2].replace_self(anno)
+            old_node = signode[2]
+            if not isinstance(old_node, addnodes.desc_annotation):
+                old_node = signode[3]
+                del signode[1]
+            old_node.replace_self(anno)
             self.state.nested_parse(ViewList([':  ', self.options.get('annotation')]), 0, anno)
 
         readonly = 'readonly' in self.options
@@ -179,6 +189,7 @@ def process_dirty_model_toc(app, doctree):
                 continue
             if subnode not in crawled:
                 crawl_toc(subnode)
+
     crawl_toc(doctree)
 
 

@@ -40,10 +40,6 @@
 
 .. _autodoc: http://www.sphinx-doc.org/en/stable/ext/autodoc.html?highlight=autodoc#module-sphinx.ext.autodoc
 
-.. toctree::
-   :hidden:
-
-   self
 
 =============================
 Dirty Models Sphinx extension
@@ -88,6 +84,17 @@ Features
 
 Changelog
 =========
+
+
+Version 0.4.0
+-------------
+
+* Document default timezone on TimeField and DatetimeField.
+* Document forced timezone on DatetimeField.
+* Minor fixes.
+* Fix nested classes.
+* Document EnumField.
+
 
 Version 0.3.0
 -------------

@@ -1,13 +1,15 @@
 import os
-
 from setuptools import setup
+
+import dirty_models_sphinx
 
 setup(
     name='dirty-models-sphinx',
     url='https://github.com/alfred82santa/dirty-models-sphinx',
     author='alfred82santa',
     author_email='alfred82santa@gmail.com',
-    version='0.3.0',
+    license='GPLv2',
+    version=dirty_models_sphinx.__version__,
     classifiers=[
         'Intended Audience :: Developers',
         'Programming Language :: Python',
@@ -18,6 +20,7 @@ setup(
         'Development Status :: 4 - Beta'],
     packages=['dirty_models_sphinx'],
     install_requires=['dirty-models', 'sphinx'],
+    include_package_data=False,
     description='Sphinx extension for dirty models',
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
     zip_safe=True,
