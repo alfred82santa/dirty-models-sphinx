@@ -96,6 +96,19 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             self.add_line("   :default: {0}".format(self.object.default), '<autodoc>')
 
         try:
+            if self.object.default_timezone is not None:
+                try:
+                    if self.object.force_timezone:
+                        self.add_line("   :forcedtimezone: {0}".format(self.object.default_timezone), '<autodoc>')
+                    else:
+                        raise AttributeError()
+                except AttributeError:
+                    self.add_line("   :defaulttimezone: {0}".format(self.object.default_timezone), '<autodoc>')
+
+        except AttributeError:
+            pass
+
+        try:
             frt = field_format(self.object.parse_format)
             if frt:
                 self.add_line("   :fieldformat: {0}".format(frt), '<autodoc>')
