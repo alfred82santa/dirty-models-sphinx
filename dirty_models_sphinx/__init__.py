@@ -11,6 +11,9 @@ from sphinx.util.docfields import Field, GroupedField
 from .documenters import DirtyModelDocumenter, DirtyModelAttributeDocumenter
 
 
+__version__ = '0.4.0'
+
+
 class ModelHeading(object):
     """
     A heading level that is not defined by a string. We need this to work with
