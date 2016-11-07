@@ -11,7 +11,7 @@ from sphinx.util.docfields import Field, GroupedField
 from .documenters import DirtyModelDocumenter, DirtyModelAttributeDocumenter
 
 
-__version__ = '0.4.0'
+__version__ = '0.4.1s'
 
 
 class ModelHeading(object):

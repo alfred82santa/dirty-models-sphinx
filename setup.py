@@ -1,7 +1,34 @@
+import ast
+
 import os
 from setuptools import setup
 
-import dirty_models_sphinx
+path = os.path.join(os.path.dirname(__file__), 'dirty_models', '__init__.py')
+
+with open(path, 'r') as file:
+    t = compile(file.read(), path, 'exec', ast.PyCF_ONLY_AST)
+    for node in (n for n in t.body if isinstance(n, ast.Assign)):
+        if len(node.targets) != 1:
+            continue
+
+        name = node.targets[0]
+        if not isinstance(name, ast.Name) or \
+                name.id not in ('__version__', '__version_info__', 'VERSION'):
+            continue
+
+        v = node.value
+        if isinstance(v, ast.Str):
+            version = v.s
+            break
+        if isinstance(v, ast.Tuple):
+            r = []
+            for e in v.elts:
+                if isinstance(e, ast.Str):
+                    r.append(e.s)
+                elif isinstance(e, ast.Num):
+                    r.append(str(e.n))
+            version = '.'.join(r)
+            break
 
 setup(
     name='dirty-models-sphinx',
@@ -9,7 +36,7 @@ setup(
     author='alfred82santa',
     author_email='alfred82santa@gmail.com',
     license='GPLv2',
-    version=dirty_models_sphinx.__version__,
+    version=version,
     classifiers=[
         'Intended Audience :: Developers',
         'Programming Language :: Python',

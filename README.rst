@@ -85,6 +85,10 @@ Features
 Changelog
 =========
 
+Version 0.4.1
+-------------
+
+* Fix installation.
 
 Version 0.4.0
 -------------
