@@ -1,15 +1,39 @@
 from datetime import time
+from enum import Enum
 
 from dirty_models.fields import IntegerField, StringField, FloatField, StringIdField, BooleanField, TimeField, \
-    DateField, DateTimeField, TimedeltaField, HashMapField, ModelField, ArrayField, MultiTypeField, BlobField
+    DateField, DateTimeField, TimedeltaField, HashMapField, ModelField, ArrayField, MultiTypeField, BlobField, EnumField
 from dirty_models.models import BaseModel
 from pytz import timezone
+
+
+class TestEnum(Enum):
+    """
+    Test enumeration
+    """
+
+    #: Value 1
+    value_1 = 1
+
+    #: Value 2
+    value_2 = 2
 
 
 class SimpleModel(BaseModel):
     """
     Model with simple type fields
     """
+
+    class InnerTestEnum(Enum):
+        """
+        Inner enumeration
+        """
+
+        #: Value 1
+        value_1 = 1
+
+        #: Value 2
+        value_2 = 2
 
     integer_field = IntegerField(read_only=True)
     """
@@ -30,6 +54,8 @@ class SimpleModel(BaseModel):
                                    force_timezone=True)
     timedelta_field = TimedeltaField()
     blob_field = BlobField()
+    enum_field = EnumField(enum_class=TestEnum)
+    inner_enum_field = EnumField(enum_class=InnerTestEnum)
 
 
 class ComposedModel(SimpleModel):
@@ -93,3 +119,21 @@ class AliasModel(BaseModel):
         Model method
         """
         pass
+
+
+class TreeModel(BaseModel):
+    """
+    Tree model.
+    """
+
+    class InnerModel(BaseModel):
+
+        """
+        Inner model.
+        """
+
+        inner_int_field = IntegerField()
+        inner_str_field = StringField()
+
+    int_field = IntegerField()
+    str_field = StringField()
