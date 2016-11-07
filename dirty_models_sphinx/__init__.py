@@ -89,6 +89,7 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
 
 
 class AliasGroupedField(GroupedField):
+
     def make_field(self, types, domain, items):
         fieldname = nodes.field_name('', self.label)
         listnode = self.list_type()
