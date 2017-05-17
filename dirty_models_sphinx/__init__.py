@@ -11,7 +11,7 @@ from sphinx.util.docfields import Field, GroupedField
 from .documenters import DirtyModelDocumenter, DirtyModelAttributeDocumenter
 
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 
 class ModelHeading(object):
@@ -91,7 +91,7 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
 
 class AliasGroupedField(GroupedField):
 
-    def make_field(self, types, domain, items):
+    def make_field(self, types, domain, items, env=None):
         fieldname = nodes.field_name('', self.label)
         listnode = self.list_type()
         if len(items) == 1 and self.can_collapse:
