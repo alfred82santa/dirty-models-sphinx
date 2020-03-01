@@ -81,9 +81,22 @@ Features
 
 * Able to add model attributes to ``toctree``.
 
+* Able to describe model as structure.
 
 Changelog
 =========
+
+Version 0.5.0
+-------------
+
+* Added option to describe model as structure.
+* Added enum documenter.
+* Added option to hide/show alias.
+* Added option to hide/show read-only tag.
+* Added option to use custom title as model name.
+* No document fields with key `hidden` set to true on field metadata.
+* Better field type handling.
+* New module autodocumenter `autodirtymodule` in order to allow to set new options at module level.
 
 Version 0.4.1
 -------------
@@ -169,10 +182,18 @@ It is possible to modify `Dirty Models Sphinx extension`_ behavior using configu
     It defines a prefix text for Dirty Model class field signatures. It is possible to use ``None`` in
     order to avoid prefix. Default: ``'property'``.
 
-**dirty_model_field_type_as_annotation**
+**dirty_enum_label**
 
-    If it is ``True`` field type will be shown as annotation to attribute. Otherwise, if it is ``False``, field type
-    will be shown as field directive. Default: ``True``.
+    It defines a prefix text for enumearions signatures. It is possible to use ``None`` in
+    order to avoid prefix. Default: ``'Enum'``.
+
+**dirty_model_hide_alias**
+
+    It allows to hide field alias.
+
+**dirty_model_hide_readonly**
+
+    It allows to hide read-only tags.
 
 -----
 Usage
