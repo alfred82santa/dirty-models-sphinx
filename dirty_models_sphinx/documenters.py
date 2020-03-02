@@ -2,19 +2,19 @@
 Auto Documenters
 """
 
-import sphinx.domains.python
+from enum import Enum
+from inspect import getdoc
+from logging import getLogger
+from typing import Any
+
 import sphinx.ext.autodoc
 import sphinx.roles
-from dirty_models.fields import (ArrayField, BaseField, BlobField, BooleanField, DateField, DateTimeField, EnumField,
+from dirty_models.fields import (ArrayField, BlobField, BooleanField, DateField, DateTimeField, EnumField,
                                  FloatField, HashMapField, IntegerField, ModelField, MultiTypeField, StringField,
                                  StringIdField, TimeField, TimedeltaField)
 from dirty_models.models import BaseField, BaseModel
 from dirty_models.utils import factory
-from enum import Enum
-from inspect import getdoc
-from logging import getLogger
 from sphinx.util.docstrings import prepare_docstring
-from typing import Any
 
 logger = getLogger(__name__)
 
@@ -241,15 +241,24 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             return ':py:class:`~datetime.timedelta`'
 
         elif isinstance(field_desc, HashMapField):
+            if '<locals>' in field_desc.model_class.__qualname__:
+                return ':py:class:`~{0}`'.format(field_desc.model_class.__name__)
+
             return ':py:class:`~{0}.{1}` hash map which values are {2}'.format(field_desc.model_class.__module__,
                                                                                field_desc.model_class.__qualname__,
                                                                                self._get_field_type_str(
                                                                                    field_desc.field_type))
         elif isinstance(field_desc, ModelField):
+            if '<locals>' in field_desc.model_class.__qualname__:
+                return ':py:class:`~{0}`'.format(field_desc.model_class.__name__)
+
             return ':py:class:`~{0}.{1}`'.format(field_desc.model_class.__module__,
                                                  field_desc.model_class.__qualname__)
 
         elif isinstance(field_desc, EnumField):
+            if '<locals>' in field_desc.enum_class.__qualname__:
+                return ':py:class:`~{0}`'.format(field_desc.enum_class.__name__)
+
             return ':py:class:`~{0}.{1}`'.format(field_desc.enum_class.__module__,
                                                  field_desc.enum_class.__qualname__)
 
@@ -297,12 +306,13 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
 
         fieldtype = self._get_field_type_str(field_spec)
 
-        if isinstance(field_spec, ModelField):
-            return
+        if self.options.get('as-structure', False):
+            if isinstance(field_spec, ModelField):
+                return
 
-        if isinstance(field_spec, EnumField) and self.options.get('struct-expand-enums'):
-            self.add_line(indent + ':type: enum', '<autodoc>')
-            return
+            if isinstance(field_spec, EnumField) and self.options.get('struct-expand-enums'):
+                self.add_line(indent + ':type: enum', '<autodoc>')
+                return
 
         self.add_line(indent + ':type: {0}'.format(fieldtype), '<autodoc>')
 
@@ -341,7 +351,7 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             if self.options.get('as-structure'):
                 default = default.value
             else:
-                default = ':py:attr:`{0}.{1}`'.format(default.__class__.__name__,
+                default = ':py:attr:`{0}.{1}`'.format(default.__class__.__qualname__,
                                                       default.name)
         self.add_line(indent + ':default: {0}'.format(default), '<autodoc>')
 
@@ -397,7 +407,7 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             if member.metadata is not None and member.metadata.get('hidden', False):
                 continue
 
-            self.add_line(indent + f'.. py:dirtymodelattribute:: {model.__name__}.{field_name}', '<autodoc>')
+            self.add_line(indent + f'.. py:dirtymodelattribute:: {model.__qualname__}.{field_name}', '<autodoc>')
             self.add_line(indent + f'   :module: {model.__module__}', '<autodoc>')
             self.build_suffix(member, indent + '   ')
 
