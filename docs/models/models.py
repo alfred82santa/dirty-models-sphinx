@@ -54,8 +54,8 @@ class SimpleModel(BaseModel):
                                    force_timezone=True)
     timedelta_field = TimedeltaField()
     blob_field = BlobField()
-    enum_field = EnumField(enum_class=TestEnum)
-    inner_enum_field = EnumField(enum_class=InnerTestEnum)
+    enum_field = EnumField(enum_class=TestEnum, default=TestEnum.value_2)
+    inner_enum_field = EnumField(enum_class=InnerTestEnum, default=TestEnum.value_1)
 
 
 class ComposedModel(SimpleModel):

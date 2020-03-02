@@ -86,6 +86,11 @@ Features
 Changelog
 =========
 
+Version 0.5.1
+-------------
+
+* Fix regressions.
+
 Version 0.5.0
 -------------
 

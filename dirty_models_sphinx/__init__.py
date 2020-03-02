@@ -14,7 +14,7 @@ from .documenters import DirtyEnumDocumenter, DirtyModelAttributeDocumenter, Dir
 
 logger = getLogger(__name__)
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
 
 
 class ModelHeading(object):
@@ -218,21 +218,18 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         if 'suffix' in self.options:
             signode += addnodes.desc_annotation('', self.options['suffix'])
 
-        typ = self.options.get('type') or self.options.get('annotation')
-
-        txt = typ
-        if typ and typ.startswith('~'):
-            typ = typ[1:]
-            txt = typ.split('.')[-1]
+        typ = self.options.get('type')
 
         if typ:
             signode += addnodes.desc_annotation('', ': ')
             self.state.nested_parse(ViewList([self.options.get('type')]), 0, signode)
 
             para = signode.pop(-1)
-            ref = para[0]
-            ref.parent = signode
-            signode += ref
+            for child in para.children:
+                child.parent = signode
+                signode += child
+
+            para.children = []
         elif 'as-structure' in self.options:
             signode += addnodes.desc_annotation('', ': ')
 
