@@ -17,6 +17,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+from dirty_models_sphinx import __version__
 import datetime
 
 import os
@@ -69,7 +70,6 @@ copyright = '{}, {}'.format(datetime.datetime.now().year, author)
 # built documents.
 #
 # The short X.Y version.
-from dirty_models_sphinx import __version__
 version = __version__
 # The full version, including alpha/beta/rc tags.
 release = __version__

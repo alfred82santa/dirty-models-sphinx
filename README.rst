@@ -86,6 +86,11 @@ Features
 Changelog
 =========
 
+Version 0.6.0
+-------------
+
+* Use `access_mode` of `dirty-models` version `0.12.0`.
+
 Version 0.5.1
 -------------
 

@@ -2,10 +2,10 @@
 Auto Documenters
 """
 
-from enum import Enum
+from enum import Enum, IntEnum
 from inspect import getdoc
 from logging import getLogger
-from typing import Any
+from typing import Any, Optional
 
 import sphinx.ext.autodoc
 import sphinx.roles
@@ -16,7 +16,31 @@ from dirty_models.models import BaseField, BaseModel
 from dirty_models.utils import factory
 from sphinx.util.docstrings import prepare_docstring
 
+try:
+    from dirty_models import AccessMode
+except ImportError:
+    class AccessMode(IntEnum):
+        READ_AND_WRITE = 0
+        WRITABLE_ONLY_ON_CREATION = 1
+        READ_ONLY = 2
+        HIDDEN = 3
+
 logger = getLogger(__name__)
+
+common_options_spec = {
+    'as-structure': sphinx.ext.autodoc.bool_option,
+    'hide-access-mode': sphinx.ext.autodoc.bool_option,
+    'hide-access-mode-writable-on-creation': sphinx.ext.autodoc.bool_option,
+    'hide-access-mode-read-only': sphinx.ext.autodoc.bool_option,
+    'hide-access-mode-hidden': sphinx.ext.autodoc.bool_option,
+    'hide-alias': sphinx.ext.autodoc.bool_option,
+    'show-access-mode': sphinx.ext.autodoc.bool_option,
+    'show-access-mode-writable-on-creation': sphinx.ext.autodoc.bool_option,
+    'show-access-mode-read-only': sphinx.ext.autodoc.bool_option,
+    'show-access-mode-hidden': sphinx.ext.autodoc.bool_option,
+    'show-alias': sphinx.ext.autodoc.bool_option,
+    'struct-expand-enums': sphinx.ext.autodoc.bool_option
+}
 
 
 class DirtyModuleDocumenter(sphinx.ext.autodoc.ModuleDocumenter):
@@ -31,12 +55,7 @@ class DirtyModuleDocumenter(sphinx.ext.autodoc.ModuleDocumenter):
 
     option_spec = {
         **sphinx.ext.autodoc.ModuleDocumenter.option_spec,
-        'as-structure': sphinx.ext.autodoc.bool_option,
-        'hide-readonly': sphinx.ext.autodoc.bool_option,
-        'hide-alias': sphinx.ext.autodoc.bool_option,
-        'show-readonly': sphinx.ext.autodoc.bool_option,
-        'show-alias': sphinx.ext.autodoc.bool_option,
-        'struct-expand-enums': sphinx.ext.autodoc.bool_option,
+        **common_options_spec
     }
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -72,11 +91,29 @@ def merge_options(options, config):
     if 'show-alias' in options:
         options['hide-alias'] = False
 
-    if 'hide-readonly' not in options:
-        options['hide-readonly'] = config.dirty_model_hide_readonly
+    if 'hide-access-mode' not in options:
+        options['hide-access-mode'] = config.dirty_model_hide_access_mode
 
-    if 'show-readonly' in options:
-        options['hide-readonly'] = False
+    if 'hide-access-mode-writable-on-creation' not in options:
+        options['hide-access-mode-writable-on-creation'] = config.dirty_model_hide_access_mode_writable_on_creation
+
+    if 'hide-access-mode-read-only' not in options:
+        options['hide-access-mode-read-only'] = config.dirty_model_hide_access_mode_read_only
+
+    if 'hide-access-mode-hidden' not in options:
+        options['hide-access-mode-hidden'] = config.dirty_model_hide_access_mode_hidden
+
+    if 'show-access-mode' not in options:
+        options['hide-access-mode'] = False
+
+    if 'show-access-mode-writable-on-creation' in options:
+        options['hide-access-mode-writable-on-creation'] = False
+
+    if 'show-access-mode-read-only' in options:
+        options['hide-access-mode-read-only'] = False
+
+    if 'show-access-mode-hidden' in options:
+        options['hide-access-mode-hidden'] = False
 
     if 'struct-expand-enums' not in options:
         options['struct-expand-enums'] = config.dirty_model_structure_expand_enums
@@ -95,12 +132,7 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
     option_spec = {
         **sphinx.ext.autodoc.ClassDocumenter.option_spec,
         'title': lambda x: x if x and isinstance(x, str) and len(x) else False,
-        'as-structure': sphinx.ext.autodoc.bool_option,
-        'hide-readonly': sphinx.ext.autodoc.bool_option,
-        'hide-alias': sphinx.ext.autodoc.bool_option,
-        'show-readonly': sphinx.ext.autodoc.bool_option,
-        'show-alias': sphinx.ext.autodoc.bool_option,
-        'struct-expand-enums': sphinx.ext.autodoc.bool_option,
+        **common_options_spec
     }
 
     def __init__(self, *args: Any) -> None:
@@ -118,7 +150,7 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
         except TypeError:
             return isinstance(member, BaseModel)
 
-    def format_args(self, **kwargs: Any) -> str:
+    def format_args(self, **kwargs: Any) -> Optional[str]:
         return None
 
     def add_directive_header(self, sig: str) -> None:
@@ -132,6 +164,31 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
         if self.options.title:
             self.add_line('   :title: %s' % self.options.title, sourcename)
 
+    def get_member_access_mode(self, member):
+        try:
+            return self.object.__override_field_access_modes__[member.name]
+        except (AttributeError, KeyError):
+            try:
+                if member.read_only:
+                    return AccessMode.READ_ONLY
+            except AttributeError:
+                try:
+                    return member.access_mode
+                except AttributeError:
+                    pass
+
+        return AccessMode.READ_AND_WRITE
+
+    def must_show_member(self, member) -> bool:
+        options = {AccessMode.WRITABLE_ONLY_ON_CREATION: 'hide-access-mode-writable-on-creation',
+                   AccessMode.READ_ONLY: 'hide-access-mode-read-only',
+                   AccessMode.HIDDEN: 'hide-access-mode-hidden'}
+
+        try:
+            return not self.options.get(options[self.get_member_access_mode(member)], False)
+        except KeyError:
+            return True
+
     def get_object_members(self, want_all):
         members_check_module, members = super(DirtyModelDocumenter, self).get_object_members(True)
 
@@ -143,11 +200,19 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
                     new_members.append((name, member))
 
         for field_name, member in self.object.get_structure().items():
+            if not self.must_show_member(member):
+                continue
+
             if member.metadata is not None and member.metadata.get('hidden', False):
                 continue
 
             try:
                 member.default = self.object.get_default_data()[field_name]
+            except KeyError:
+                pass
+
+            try:
+                member.access_mode = self.get_member_access_mode(member)
             except KeyError:
                 pass
             new_members.append((field_name, member))
@@ -187,11 +252,7 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     option_spec = {
         **sphinx.ext.autodoc.AttributeDocumenter.option_spec,
         'as-structure': sphinx.ext.autodoc.bool_option,
-        'hide-readonly': sphinx.ext.autodoc.bool_option,
-        'hide-alias': sphinx.ext.autodoc.bool_option,
-        'show-readonly': sphinx.ext.autodoc.bool_option,
-        'show-alias': sphinx.ext.autodoc.bool_option,
-        'struct-expand-enums': sphinx.ext.autodoc.bool_option,
+        **common_options_spec
     }
 
     def __init__(self, *args, **kwargs):
@@ -316,9 +377,23 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
 
         self.add_line(indent + ':type: {0}'.format(fieldtype), '<autodoc>')
 
-    def build_readonly(self, field_spec, indent):
-        if field_spec.read_only and not self.options.get('hide-readonly', False):
-            self.add_line(indent + ':readonly:', '<autodoc>')
+    def build_access_mode(self, field_spec, indent):
+        if self.options.get('hide-access-mode', False):
+            return
+
+        try:
+            if field_spec.read_only:
+                mode = 'read-only'
+            else:
+                mode = 'read-and-write'
+        except AttributeError:
+            modes = {AccessMode.READ_AND_WRITE: 'read-and-write',
+                     AccessMode.WRITABLE_ONLY_ON_CREATION: 'writable-only-on-creation',
+                     AccessMode.READ_ONLY: 'read-only',
+                     AccessMode.HIDDEN: 'hidden'}
+            mode = modes[field_spec.access_mode]
+
+        self.add_line(indent + ':access-mode: {}'.format(mode), '<autodoc>')
 
     def build_options(self, field_spec, indent):
         # if self.options.get('noindex'):
@@ -328,11 +403,11 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             self.add_line(indent + ':as-structure:', '<autodoc>')
 
         self.build_type(field_spec, indent)
-        self.build_readonly(field_spec, indent)
+        self.build_access_mode(field_spec, indent)
 
     def build_autodoc_options(self, field_spec, indent):
-        if self.options.get('hide-readonly'):
-            self.add_line(indent + ':hide-readonly:', '<autodoc>')
+        if self.options.get('hide-access-mode'):
+            self.add_line(indent + ':hide-access-mode:', '<autodoc>')
 
         if self.options.get('hide-alias'):
             self.add_line(indent + ':hide-alias:', '<autodoc>')

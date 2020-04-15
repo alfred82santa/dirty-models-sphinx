@@ -6,6 +6,8 @@ from dirty_models.fields import IntegerField, StringField, FloatField, StringIdF
 from dirty_models.models import BaseModel
 from pytz import timezone
 
+from dirty_models_sphinx.documenters import AccessMode
+
 
 class TestEnum(Enum):
     """
@@ -56,6 +58,10 @@ class SimpleModel(BaseModel):
     blob_field = BlobField()
     enum_field = EnumField(enum_class=TestEnum, default=TestEnum.value_2)
     inner_enum_field = EnumField(enum_class=InnerTestEnum, default=TestEnum.value_1)
+
+    writable_on_creation_field = IntegerField(access_mode=AccessMode.WRITABLE_ONLY_ON_CREATION)
+    read_only_field = IntegerField(access_mode=AccessMode.READ_ONLY)
+    hidden_field = IntegerField(access_mode=AccessMode.HIDDEN)
 
 
 class ComposedModel(SimpleModel):

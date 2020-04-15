@@ -14,7 +14,16 @@ from .documenters import DirtyEnumDocumenter, DirtyModelAttributeDocumenter, Dir
 
 logger = getLogger(__name__)
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'
+
+access_mode_labels = {'read-and-write': None,
+                      'writable-only-on-creation': 'WRITABLE ONLY ON CREATION',
+                      'read-only': 'READ ONLY',
+                      'hidden': 'HIDDEN'}
+
+
+def access_mode(argument):
+    return directives.choice(argument, values=list(access_mode_labels.keys()))
 
 
 class ModelHeading(object):
@@ -170,7 +179,7 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         'noindex': directives.flag,
         'module': directives.unchanged,
         'annotation': directives.unchanged,
-        'readonly': directives.flag,
+        'access-mode': access_mode,
         'type': directives.unchanged,
         'as-structure': directives.flag,
         'suffix': directives.unchanged,
@@ -233,11 +242,13 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         elif 'as-structure' in self.options:
             signode += addnodes.desc_annotation('', ': ')
 
-        readonly = 'readonly' in self.options
-        if readonly:
-            signode['classes'].append('readonly')
-            t = ' [{}]'.format(_('READ ONLY'))
-            signode += addnodes.desc_annotation('', t, classes=['readonly-label'])
+        access_mode = self.options.get('access-mode', 'read-and-write')
+        signode['classes'].append('access-mode-{}'.format(access_mode))
+
+        access_mode_label = access_mode_labels.get(access_mode)
+        if access_mode_label:
+            t = ' [{}]'.format(_(access_mode_label))
+            signode += addnodes.desc_annotation('', t, classes=['access-mode-label'])
 
         return result
 
@@ -255,7 +266,9 @@ def process_dirty_model_toc(app, doctree):
     not generate the toctree:: list.
 
     """
-    env = app.builder.env
+    if not app.config.dirty_model_add_classes_to_toc:
+        return
+
     crawled = {}
 
     def crawl_toc(node):
@@ -285,7 +298,12 @@ def setup(app):
     app.add_config_value('dirty_enum_label', 'enum', True)
 
     app.add_config_value('dirty_model_hide_alias', False, True)
-    app.add_config_value('dirty_model_hide_readonly', False, True)
+
+    app.add_config_value('dirty_model_hide_access_mode', False, True)
+    app.add_config_value('dirty_model_hide_access_mode_writable_on_creation', False, True)
+    app.add_config_value('dirty_model_hide_access_mode_read_only', False, True)
+    app.add_config_value('dirty_model_hide_access_mode_hidden', True, True)
+
     app.add_config_value('dirty_model_structure_expand_enums', True, True)
 
     app.connect('doctree-read', process_dirty_model_toc)
