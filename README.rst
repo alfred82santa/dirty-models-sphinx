@@ -83,18 +83,29 @@ Features
 
 * Able to describe model as structure.
 
+
 Changelog
 =========
+
+Version 0.6.1
+-------------
+
+* Remove deprecated dependencies in `Sphinx`_ 3.0.0.
+* Added documentation for `HashMapModels` with hardcoded field type.
+* Fixes.
+
 
 Version 0.6.0
 -------------
 
-* Use `access_mode` of `dirty-models` version `0.12.0`.
+* Use `access_mode` of `Dirty Models`_ version `0.12.0`.
+
 
 Version 0.5.1
 -------------
 
 * Fix regressions.
+
 
 Version 0.5.0
 -------------
@@ -108,10 +119,12 @@ Version 0.5.0
 * Better field type handling.
 * New module autodocumenter `autodirtymodule` in order to allow to set new options at module level.
 
+
 Version 0.4.1
 -------------
 
 * Fix installation.
+
 
 Version 0.4.0
 -------------
@@ -134,12 +147,14 @@ Version 0.3.0
 * Added fields to index.
 * Changed default value label to ``Default value``.
 
+
 Issues
 ======
 
 * Latex manual document class builder fails when model attributes are in ``toctree``.
   That is because it creates a fake sections with same ``ids`` and remove after ``toctree`` is created.
   So, latex builder does not found references when it try to create links.
+
 
 ------------
 Installation
