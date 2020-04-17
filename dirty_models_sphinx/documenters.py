@@ -219,6 +219,30 @@ class DirtyModelDocumenter(sphinx.ext.autodoc.ClassDocumenter):
 
         return members_check_module, new_members
 
+    def document_members(self, all_members: bool = False) -> None:
+        """Generate reST for member documentation.
+
+        If *all_members* is True, do all members, else those given by
+        *self.options.members*.
+        """
+        # set current namespace for finding members
+        super(DirtyModelDocumenter, self).document_members(all_members=all_members)
+
+        if not hasattr(self.object, '__field_type__') or not self.object.__field_type__:
+            return
+
+        self.env.temp_data['autodoc:module'] = self.modname
+        if self.objpath:
+            self.env.temp_data['autodoc:class'] = self.objpath[0]
+
+        full_mname = self.modname + '::' + '.'.join(self.objpath + ['__field_type__'])
+        documenter = DirtyModelAdditionalPropertiesDocumenter(self.directive, full_mname, self.indent)
+        documenter.object = self.object.__field_type__
+        documenter.generate(all_members=True, real_modname=self.real_modname, check_module=False)
+
+        self.env.temp_data['autodoc:module'] = None
+        self.env.temp_data['autodoc:class'] = None
+
 
 def field_format(parse_format):
     if isinstance(parse_format, str):
@@ -239,13 +263,13 @@ def field_format(parse_format):
                                                         parse_format.__qualname__)
 
 
-class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
+class DirtyModelPropertyDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     """
     A Documenter for :class:`dirty_models.fields.BaseField`
     interface attributes.
     """
 
-    objtype = 'dirtymodelattribute'  # Called 'autodirtymoldelattribute'
+    objtype = 'dirtymodelproperty'  # Called 'autodirtymoldelproperty'
 
     priority = 100 + sphinx.ext.autodoc.AttributeDocumenter.priority
 
@@ -256,7 +280,7 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     }
 
     def __init__(self, *args, **kwargs):
-        super(DirtyModelAttributeDocumenter, self).__init__(*args, **kwargs)
+        super(DirtyModelPropertyDocumenter, self).__init__(*args, **kwargs)
 
         merge_options(self.options, self.env.app.config)
 
@@ -270,7 +294,7 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
         return field_spec, lst
 
     def add_directive_header(self, sig):
-        super(DirtyModelAttributeDocumenter, self).add_directive_header(sig)
+        super(DirtyModelPropertyDocumenter, self).add_directive_header(sig)
 
         self.build_options(self.object, indent='   ')
 
@@ -334,8 +358,8 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
     def generate(self, more_content=None, real_modname=None,
                  check_module=False, all_members=False):
 
-        super(DirtyModelAttributeDocumenter, self).generate(more_content, real_modname,
-                                                            check_module, all_members)
+        super(DirtyModelPropertyDocumenter, self).generate(more_content, real_modname,
+                                                           check_module, all_members)
 
         self.add_line('', '<autodoc>')
         self.build_fields(self.object, '')
@@ -482,7 +506,7 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             if member.metadata is not None and member.metadata.get('hidden', False):
                 continue
 
-            self.add_line(indent + f'.. py:dirtymodelattribute:: {model.__qualname__}.{field_name}', '<autodoc>')
+            self.add_line(indent + f'.. py:dirtymodelproperty:: {model.__qualname__}.{field_name}', '<autodoc>')
             self.add_line(indent + f'   :module: {model.__module__}', '<autodoc>')
             self.build_suffix(member, indent + '   ')
 
@@ -508,3 +532,14 @@ class DirtyModelAttributeDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
                 self.document_structure_inner_model(member.model_class, indent=indent + '   ')
 
                 self.add_line(indent + '', '<autodoc>')
+
+
+class DirtyModelAdditionalPropertiesDocumenter(DirtyModelPropertyDocumenter):
+    objtype = 'dirtymodeladditionalproperties'  # Called 'autodirtymoldeladditionalproperties'
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        return False
+
+    def add_content(self, more_content: Any, no_docstring: bool = False) -> None:
+        pass

@@ -7,14 +7,15 @@ from docutils import nodes
 from docutils.parsers.rst import directives
 from docutils.statemachine import ViewList
 from sphinx import addnodes
+from sphinx.domains.python import PyAttribute
 from sphinx.locale import _
 from sphinx.util.docfields import Field, GroupedField
 
-from .documenters import DirtyEnumDocumenter, DirtyModelAttributeDocumenter, DirtyModelDocumenter, DirtyModuleDocumenter
+from .documenters import DirtyEnumDocumenter, DirtyModelDocumenter, DirtyModelPropertyDocumenter, DirtyModuleDocumenter
 
 logger = getLogger(__name__)
 
-__version__ = '0.6.0'
+__version__ = '0.6.1'
 
 access_mode_labels = {'read-and-write': None,
                       'writable-only-on-creation': 'WRITABLE ONLY ON CREATION',
@@ -85,7 +86,7 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
 
     option_spec = {
         **sphinx.domains.python.PyClasslike.option_spec,
-        'title': directives.unchanged,
+        'title': directives.unchanged
     }
 
     def get_index_text(self, modname, name_cls):
@@ -138,7 +139,8 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
                 for node in result[1][1][1]:
                     if not isinstance(node, addnodes.desc) \
                             or node['desctype'] not in ('attribute',
-                                                        'dirtymodelattribute',
+                                                        'dirtymodelproperty',
+                                                        'dirtymodeladditionalproperties',
                                                         'method',
                                                         'classmethod',
                                                         'class') \
@@ -172,8 +174,8 @@ class AliasGroupedField(GroupedField):
         return nodes.field('', fieldname, fieldbody)
 
 
-class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
-    """An `'dirtymodelattribute'` directive."""
+class DirtyModelPropertyDirective(sphinx.domains.python.PyAttribute):
+    """An `'dirtymodelproperty'` directive."""
 
     option_spec = {
         'noindex': directives.flag,
@@ -208,7 +210,7 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         name, cls = name_cls
         add_modules = self.env.config.add_module_names
 
-        if self.objtype == 'dirtymodelattribute':
+        if self.objtype == 'dirtymodelproperty':
             label = _(self.env.app.config.dirty_model_property_label or '')
             clsname, attrname = name.rsplit('.', 1)
             if modname and add_modules:
@@ -222,7 +224,7 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         if 'as-structure' in self.options:
             sig = sig.split('.')[-1]
 
-        result = super(DirtyModelAttributeDirective, self).handle_signature(sig, signode)
+        result = super(PyAttribute, self).handle_signature(sig, signode)
 
         if 'suffix' in self.options:
             signode += addnodes.desc_annotation('', self.options['suffix'])
@@ -256,8 +258,41 @@ class DirtyModelAttributeDirective(sphinx.domains.python.PyClassmember):
         if 'as-structure' in self.options:
             return ''
         if self.env.app.config.dirty_model_class_label is None:
-            return super(DirtyModelAttributeDirective, self).get_signature_prefix()
+            return super(DirtyModelPropertyDirective, self).get_signature_prefix()
         return '{} '.format(_(self.env.app.config.dirty_model_property_label))
+
+
+class DirtyModelAdditionalPropertiesDirective(DirtyModelPropertyDirective):
+    def handle_signature(self, sig, signode):
+        signode += addnodes.desc_name('Additional properties', _('Additional properties'))
+
+        if 'suffix' in self.options:
+            signode += addnodes.desc_annotation('', self.options['suffix'])
+
+        typ = self.options.get('type')
+
+        if typ:
+            signode += addnodes.desc_annotation('', ': ')
+            self.state.nested_parse(ViewList([self.options.get('type')]), 0, signode)
+
+            para = signode.pop(-1)
+            for child in para.children:
+                child.parent = signode
+                signode += child
+
+            para.children = []
+        elif 'as-structure' in self.options:
+            signode += addnodes.desc_annotation('', ': ')
+
+        access_mode = self.options.get('access-mode', 'read-and-write')
+        signode['classes'].append('access-mode-{}'.format(access_mode))
+
+        access_mode_label = access_mode_labels.get(access_mode)
+        if access_mode_label:
+            t = ' [{}]'.format(_(access_mode_label))
+            signode += addnodes.desc_annotation('', t, classes=['access-mode-label'])
+
+        return 'Additional properties', ''
 
 
 def process_dirty_model_toc(app, doctree):
@@ -289,7 +324,7 @@ def setup(app):
     app.add_autodocumenter(DirtyModuleDocumenter)
     app.add_autodocumenter(DirtyEnumDocumenter)
     app.add_autodocumenter(DirtyModelDocumenter)
-    app.add_autodocumenter(DirtyModelAttributeDocumenter)
+    app.add_autodocumenter(DirtyModelPropertyDocumenter)
 
     app.add_config_value('dirty_model_add_classes_to_toc', True, True)
     app.add_config_value('dirty_model_add_attributes_to_toc', True, True)
@@ -322,7 +357,17 @@ def setup(app):
     domain.directives['dirtymodel'] = DirtyModelDirective
     domain.roles['dirtymodel'] = sphinx.domains.python.PyXRefRole()
 
-    domain.object_types['dirtymodelattribute'] = sphinx.domains.python.ObjType(_('Attribute'), 'dirtymodelattribute',
-                                                                               'obj', 'attr')
-    domain.directives['dirtymodelattribute'] = DirtyModelAttributeDirective
-    domain.roles['dirtymodelattribute'] = sphinx.domains.python.PyXRefRole()
+    domain.object_types['dirtymodelproperty'] = sphinx.domains.python.ObjType(_('Property'), 'dirtymodelproperty',
+                                                                              'obj', 'attr')
+    domain.directives['dirtymodelproperty'] = DirtyModelPropertyDirective
+    domain.roles['dirtymodelproperty'] = sphinx.domains.python.PyXRefRole()
+
+    domain.object_types['dirtymodeladditionalproperties'] = sphinx.domains.python.ObjType(
+        _('Additional properties'),
+        'dirtymodeladditionalproperties',
+        'obj',
+        'attr'
+    )
+
+    domain.directives['dirtymodeladditionalproperties'] = DirtyModelAdditionalPropertiesDirective
+    domain.roles['dirtymodeladditionalproperties'] = sphinx.domains.python.PyXRefRole()

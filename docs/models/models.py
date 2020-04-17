@@ -1,8 +1,9 @@
 from datetime import time
 from enum import Enum
 
-from dirty_models.fields import IntegerField, StringField, FloatField, StringIdField, BooleanField, TimeField, \
-    DateField, DateTimeField, TimedeltaField, HashMapField, ModelField, ArrayField, MultiTypeField, BlobField, EnumField
+from dirty_models import HashMapModel
+from dirty_models.fields import ArrayField, BlobField, BooleanField, DateField, DateTimeField, EnumField, FloatField, \
+    HashMapField, IntegerField, ModelField, MultiTypeField, StringField, StringIdField, TimeField, TimedeltaField
 from dirty_models.models import BaseModel
 from pytz import timezone
 
@@ -133,7 +134,6 @@ class TreeModel(BaseModel):
     """
 
     class InnerModel(BaseModel):
-
         """
         Inner model.
         """
@@ -143,3 +143,9 @@ class TreeModel(BaseModel):
 
     int_field = IntegerField()
     str_field = StringField()
+
+
+class HardCodedHashMapModel(HashMapModel):
+    __field_type__ = IntegerField()
+
+    test_field = StringField()

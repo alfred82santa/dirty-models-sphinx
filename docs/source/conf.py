@@ -17,7 +17,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-from dirty_models_sphinx import __version__
+
 import datetime
 
 import os
@@ -25,6 +25,8 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))  # Add root
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'models')))  # Add models
+
+from dirty_models_sphinx import __version__
 
 # -- General configuration ------------------------------------------------
 
@@ -448,7 +450,7 @@ epub_exclude_files = ['search.html']
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3.4': None,
+intersphinx_mapping = {'https://docs.python.org/3.8': None,
                        'http://dirty-models.readthedocs.io': None, }
 
 dirty_model_add_classes_to_toc = True
