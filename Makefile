@@ -2,6 +2,9 @@
 PACKAGE_NAME = dirty_model_sphinx
 PACKAGE_COVERAGE = dirty_model_sphinx
 
+_PHONY: build publish run-tests help requirements requirements-docs \
+		requirements-test clean flake autopep prepush pull-request
+
 help:
 	@echo "Options"
 	@echo "-----------------------------------------------------------------------"
@@ -36,13 +39,25 @@ run-tests:
 	@echo "Running tests..."
 	nosetests --with-coverage -d --cover-package=${PACKAGE_COVERAGE} --cover-erase
 
-publish:
-	@echo "Publishing new version on Pypi..."
-	python setup.py sdist upload
+build:
+	python setup.py bdist_wheel
+
+publish: build
+	@echo "Publishing new ${PACKAGE_NAME} version on PyPi..."
+	twine upload dist/*.whl
 
 clean:
 	@echo "Cleaning compiled files..."
-	find . | grep -E "(__pycache__|\.pyc|\.pyo)$ " | xargs rm -rf
+	find . | grep -E "(__pycache__|\.pyc|\.pyo|pytest_cache)$ " | xargs rm -rf
+	@echo "Cleaning distribution files..."
+	rm -rf dist
+	@echo "Cleaning build files..."
+	rm -rf build
+	@echo "Cleaning egg info files..."
+	rm -rf ${PACKAGE_NAME}.egg-info
+	@echo "Cleaning coverage files..."
+	rm -f .coverage
+
 
 flake:
 	@echo "Running flake8 tests..."

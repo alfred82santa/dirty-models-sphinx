@@ -1,6 +1,6 @@
 import ast
-
 import os
+
 from setuptools import setup
 
 path = os.path.join(os.path.dirname(__file__), 'dirty_models_sphinx', '__init__.py')
@@ -43,10 +43,16 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         'Development Status :: 4 - Beta'],
     packages=['dirty_models_sphinx'],
     install_requires=['dirty-models', 'sphinx'],
+    long_description_content_type='text/x-rst',
     include_package_data=False,
     description='Sphinx extension for dirty models',
     long_description=open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
