@@ -87,6 +87,13 @@ Features
 Changelog
 =========
 
+
+Version 0.6.2
+-------------
+
+* Make it compatible with newer versions of `Sphinx`_ (+5.0).
+
+
 Version 0.6.1
 -------------
 

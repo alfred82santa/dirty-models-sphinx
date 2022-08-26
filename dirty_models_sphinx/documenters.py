@@ -521,7 +521,7 @@ class DirtyModelPropertyDocumenter(sphinx.ext.autodoc.AttributeDocumenter):
             docstring = getdoc(member)
             if docstring:
                 tab_width = self.directive.state.document.settings.tab_width
-                [self.add_line(indent + '   ' + l, '<autodoc>') for l in prepare_docstring(docstring, 1, tab_width)]
+                [self.add_line(indent + '   ' + l, '<autodoc>') for l in prepare_docstring(docstring, tab_width)]
 
             self.add_line(indent + '   ', '<autodoc>')
             self.build_fields(member, indent + '   ')

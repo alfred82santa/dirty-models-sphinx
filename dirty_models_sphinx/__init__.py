@@ -15,7 +15,7 @@ from .documenters import DirtyEnumDocumenter, DirtyModelDocumenter, DirtyModelPr
 
 logger = getLogger(__name__)
 
-__version__ = '0.6.1'
+__version__ = '0.6.2'
 
 access_mode_labels = {'read-and-write': None,
                       'writable-only-on-creation': 'WRITABLE ONLY ON CREATION',
@@ -73,7 +73,8 @@ class DirtyEnumDirective(sphinx.domains.python.PyClasslike):
     def get_signature_prefix(self, sig):
         if self.env.app.config.dirty_enum_label is None:
             return super(DirtyEnumDirective, self).get_signature_prefix(sig)
-        return '{} '.format(_(self.env.app.config.dirty_enum_label))
+        prefix = '{} '.format(_(self.env.app.config.dirty_enum_label))
+        return addnodes.desc_sig_literal_string(prefix, prefix)
 
     def needs_arglist(self):
         return False
@@ -102,7 +103,8 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
     def get_signature_prefix(self, sig):
         if self.env.app.config.dirty_model_class_label is None:
             return super(DirtyModelDirective, self).get_signature_prefix(sig)
-        return '{} '.format(_(self.env.app.config.dirty_model_class_label))
+        prefix = '{} '.format(_(self.env.app.config.dirty_model_class_label))
+        return addnodes.desc_sig_literal_string(prefix, prefix)
 
     def needs_arglist(self):
         return False
@@ -161,14 +163,14 @@ class DirtyModelDirective(sphinx.domains.python.PyClasslike):
 
 class AliasGroupedField(GroupedField):
 
-    def make_field(self, types, domain, items, env=None):
+    def make_field(self, types, domain, items, **kwargs):
         fieldname = nodes.field_name('', self.label)
         listnode = self.list_type()
         if len(items) == 1 and self.can_collapse:
             return Field.make_field(self, types, domain, items[0])
         for fieldarg, content in items:
             par = nodes.paragraph()
-            par += self.make_xref(self.rolename, domain, fieldarg, nodes.strong)
+            par += self.make_xref(self.rolename, domain, fieldarg, nodes.strong, **kwargs)
             listnode += nodes.list_item('', par)
         fieldbody = nodes.field_body('', listnode)
         return nodes.field('', fieldname, fieldbody)
@@ -259,7 +261,8 @@ class DirtyModelPropertyDirective(sphinx.domains.python.PyAttribute):
             return ''
         if self.env.app.config.dirty_model_class_label is None:
             return super(DirtyModelPropertyDirective, self).get_signature_prefix()
-        return '{} '.format(_(self.env.app.config.dirty_model_property_label))
+        prefix = '{} '.format(_(self.env.app.config.dirty_model_property_label))
+        return addnodes.desc_sig_literal_string(prefix, prefix)
 
 
 class DirtyModelAdditionalPropertiesDirective(DirtyModelPropertyDirective):
